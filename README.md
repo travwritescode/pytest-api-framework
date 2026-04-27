@@ -16,16 +16,21 @@ Tests run against the FastAPI app in-process via ASGI transport with an isolated
 
 ## Setup
 
-**1. Install flowstate-api as a local editable dependency**
+**1. Clone both repos as siblings**
 
-```bash
-pip install -e ../flowstate-api
+```
+projects/
+├── flowstate-api/
+└── pytest-api-framework/
 ```
 
-**2. Install test dependencies**
+`conftest.py` adds `../flowstate-api` to `sys.path` automatically — no install step needed.
+
+**2. Install dependencies**
 
 ```bash
 pip install -r requirements.txt
+pip install -r ../flowstate-api/requirements.txt
 ```
 
 **3. Run the tests**
