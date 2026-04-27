@@ -8,7 +8,7 @@ assertions stay in the tests.
 
 from uuid import uuid4
 
-from httpx import AsyncClient
+from httpx import AsyncClient, Response
 
 
 def unique_email() -> str:
@@ -19,8 +19,8 @@ async def register_user(
     client: AsyncClient,
     email: str | None = None,
     password: str = "TestPass123!",
-) -> dict:
-    """POST /auth/register — returns the UserResponse dict."""
+) -> Response:
+    """POST /auth/register — returns the raw Response."""
     payload = {"email": email or unique_email(), "password": password}
     resp = await client.post("/auth/register", json=payload)
     return resp
@@ -48,8 +48,8 @@ async def create_task(
     headers: dict,
     title: str = "Test task",
     **overrides,
-) -> dict:
-    """POST /tasks — returns the TaskResponse dict."""
+) -> Response:
+    """POST /tasks — returns the raw Response."""
     payload = {"title": title, **overrides}
     resp = await client.post("/tasks", json=payload, headers=headers)
     return resp
