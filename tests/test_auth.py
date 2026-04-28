@@ -1,7 +1,7 @@
 import allure
 from httpx import AsyncClient
 
-from helpers.factories import login, register_user, unique_email
+from helpers.factories import register_user, unique_email
 
 
 @allure.feature("Auth")
