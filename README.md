@@ -6,6 +6,8 @@ Tests run against the FastAPI app in-process via ASGI transport with an isolated
 
 ## Coverage
 
+46 tests across 5 modules. See [TEST_CASES.md](TEST_CASES.md) for the full list with descriptions.
+
 | Module | What it tests |
 |---|---|
 | `tests/test_auth.py` | Register, login, duplicate email, wrong password, inactive account |
@@ -39,8 +41,23 @@ pip install -r ../flowstate-api/requirements.txt
 pytest
 ```
 
-**4. View the Allure report**
+## Allure Report
+
+Each test is annotated with `@allure.feature`, `@allure.story`, `@allure.severity`, and `@allure.description`. Running the suite produces raw results in `allure-results/`.
+
+**Generate and open the HTML report**
+
+Requires the [Allure CLI](https://allurereport.org/docs/install/) (needs Java):
 
 ```bash
-allure serve allure-results
+# Install CLI (one-time)
+npm install -g allure-commandline
+
+# Generate report from latest results
+allure generate allure-results -o allure-report --clean
+
+# Open in browser
+allure open allure-report
 ```
+
+For a GitHub-readable summary without running the CLI, see [TEST_CASES.md](TEST_CASES.md).

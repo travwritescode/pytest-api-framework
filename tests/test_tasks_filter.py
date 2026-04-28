@@ -8,6 +8,11 @@ from helpers.factories import create_task
 class TestStatusFilter:
     @allure.story("Filtering")
     @allure.severity(allure.severity_level.CRITICAL)
+    @allure.description(
+        "GET /tasks with no query parameters returns all non-deleted tasks for the "
+        "authenticated user. Creates tasks with three different statuses and confirms "
+        "all three are returned."
+    )
     async def test_no_filter_returns_all_tasks(
         self, client: AsyncClient, auth_headers: dict
     ):
@@ -22,6 +27,11 @@ class TestStatusFilter:
 
     @allure.story("Filtering")
     @allure.severity(allure.severity_level.CRITICAL)
+    @allure.description(
+        "GET /tasks?status=todo returns only tasks with status='todo'. Creates one "
+        "todo and one done task; confirms only the todo is returned and the count "
+        "is exactly one."
+    )
     async def test_status_todo_filter(self, client: AsyncClient, auth_headers: dict):
         await create_task(client, auth_headers, status="todo")
         await create_task(client, auth_headers, status="done")
@@ -35,6 +45,11 @@ class TestStatusFilter:
 
     @allure.story("Filtering")
     @allure.severity(allure.severity_level.NORMAL)
+    @allure.description(
+        "GET /tasks?status=in_progress returns only tasks with status='in_progress'. "
+        "Confirms the filter works for the intermediate workflow state and excludes "
+        "tasks with other statuses."
+    )
     async def test_status_in_progress_filter(
         self, client: AsyncClient, auth_headers: dict
     ):
@@ -49,6 +64,10 @@ class TestStatusFilter:
 
     @allure.story("Filtering")
     @allure.severity(allure.severity_level.NORMAL)
+    @allure.description(
+        "GET /tasks?status=done returns only tasks with status='done'. Confirms the "
+        "filter correctly isolates completed tasks and excludes tasks in other states."
+    )
     async def test_status_done_filter(self, client: AsyncClient, auth_headers: dict):
         await create_task(client, auth_headers, status="done")
         await create_task(client, auth_headers, status="todo")
@@ -64,6 +83,11 @@ class TestStatusFilter:
 class TestPriorityFilter:
     @allure.story("Filtering")
     @allure.severity(allure.severity_level.NORMAL)
+    @allure.description(
+        "GET /tasks?priority=high returns only tasks with priority='high'. Creates one "
+        "high and one low priority task; confirms only the high-priority task is "
+        "returned and the count is exactly one."
+    )
     async def test_priority_high_filter(self, client: AsyncClient, auth_headers: dict):
         await create_task(client, auth_headers, priority="high")
         await create_task(client, auth_headers, priority="low")
@@ -77,6 +101,11 @@ class TestPriorityFilter:
 
     @allure.story("Filtering")
     @allure.severity(allure.severity_level.NORMAL)
+    @allure.description(
+        "GET /tasks?priority=low returns only tasks with priority='low'. Creates tasks "
+        "with low, high, and medium priorities; confirms all returned tasks have "
+        "priority='low'."
+    )
     async def test_priority_low_filter(self, client: AsyncClient, auth_headers: dict):
         await create_task(client, auth_headers, priority="low")
         await create_task(client, auth_headers, priority="high")
@@ -93,6 +122,11 @@ class TestPriorityFilter:
 class TestCombinedFilter:
     @allure.story("Filtering")
     @allure.severity(allure.severity_level.NORMAL)
+    @allure.description(
+        "GET /tasks?status=todo&priority=high returns only tasks matching both "
+        "criteria simultaneously. Creates three tasks covering the boundary combinations "
+        "(todo/high, todo/low, done/high) and confirms only the todo+high task is returned."
+    )
     async def test_status_and_priority_combined(
         self, client: AsyncClient, auth_headers: dict
     ):
@@ -112,6 +146,10 @@ class TestCombinedFilter:
 
     @allure.story("Filtering")
     @allure.severity(allure.severity_level.NORMAL)
+    @allure.description(
+        "Applying a filter that matches no tasks returns 200 with an empty list, not "
+        "404 or 500. Confirms the API treats zero results as a valid, empty collection."
+    )
     async def test_filter_with_no_matches_returns_empty_list(
         self, client: AsyncClient, auth_headers: dict
     ):
@@ -127,6 +165,12 @@ class TestCombinedFilter:
 class TestOrdering:
     @allure.story("Ordering")
     @allure.severity(allure.severity_level.NORMAL)
+    @allure.description(
+        "GET /tasks returns tasks ordered by created_at descending (newest first). "
+        "Verifies the created_at values in the response are in non-increasing order. "
+        "Note: SQLite's func.now() has second-level resolution so timestamps may be "
+        "equal in the test environment; the assertion correctly handles ties."
+    )
     async def test_tasks_returned_newest_first(
         self, client: AsyncClient, auth_headers: dict
     ):
@@ -147,6 +191,12 @@ class TestOrdering:
 class TestSoftDelete:
     @allure.story("Soft Delete")
     @allure.severity(allure.severity_level.CRITICAL)
+    @allure.description(
+        "After deleting a task, it no longer appears in GET /tasks but a non-deleted "
+        "task created in the same session still does. Confirms the list endpoint's "
+        "is_deleted=False filter correctly excludes soft-deleted tasks while preserving "
+        "active ones."
+    )
     async def test_soft_deleted_task_excluded_from_list(
         self, client: AsyncClient, auth_headers: dict
     ):
@@ -162,6 +212,11 @@ class TestSoftDelete:
 
     @allure.story("Soft Delete")
     @allure.severity(allure.severity_level.CRITICAL)
+    @allure.description(
+        "Fetching a soft-deleted task directly by ID returns 404, not 500. Confirms "
+        "the get_task_or_404 helper filters out is_deleted=True rows and that the "
+        "presence of a soft-deleted row in the database does not cause a server error."
+    )
     async def test_soft_deleted_task_returns_404_not_500(
         self, client: AsyncClient, auth_headers: dict
     ):

@@ -14,6 +14,11 @@ EXPECTED_TASK_FIELDS = {
 class TestCreateTask:
     @allure.story("Create")
     @allure.severity(allure.severity_level.CRITICAL)
+    @allure.description(
+        "Creating a task with only a title returns 201 and applies the correct defaults: "
+        "status='todo', priority='medium', description=null, due_date=null. Confirms "
+        "the API does not require optional fields."
+    )
     async def test_create_minimal_task_returns_201_with_defaults(
         self, client: AsyncClient, auth_headers: dict
     ):
@@ -29,6 +34,11 @@ class TestCreateTask:
 
     @allure.story("Create")
     @allure.severity(allure.severity_level.NORMAL)
+    @allure.description(
+        "Creating a task with all optional fields populated (description, status, "
+        "priority, due_date) returns 201 and round-trips every value correctly. "
+        "Confirms no field is silently dropped or coerced."
+    )
     async def test_create_task_with_all_fields(
         self, client: AsyncClient, auth_headers: dict
     ):
@@ -52,6 +62,12 @@ class TestCreateTask:
 
     @allure.story("Create")
     @allure.severity(allure.severity_level.NORMAL)
+    @allure.description(
+        "The task creation response contains exactly the expected set of fields: "
+        "id, title, description, status, priority, due_date, owner_id, created_at, "
+        "updated_at. This is a contract test — any field added or removed from "
+        "TaskResponse will cause this test to fail immediately."
+    )
     async def test_create_task_response_contract(
         self, client: AsyncClient, auth_headers: dict
     ):
@@ -65,6 +81,11 @@ class TestCreateTask:
 class TestGetTask:
     @allure.story("Read")
     @allure.severity(allure.severity_level.CRITICAL)
+    @allure.description(
+        "Fetching a task by its ID returns 200 with the correct task. Confirms the "
+        "GET /tasks/{id} endpoint resolves the right record and that the response "
+        "matches what was created."
+    )
     async def test_get_task_by_id_returns_correct_task(
         self, client: AsyncClient, auth_headers: dict
     ):
@@ -78,6 +99,11 @@ class TestGetTask:
 
     @allure.story("Read")
     @allure.severity(allure.severity_level.NORMAL)
+    @allure.description(
+        "Requesting a task ID that does not exist returns 404. Verifies the API "
+        "handles missing resources gracefully rather than returning 500 or an empty "
+        "200 response."
+    )
     async def test_get_nonexistent_task_returns_404(
         self, client: AsyncClient, auth_headers: dict
     ):
@@ -90,6 +116,11 @@ class TestGetTask:
 class TestUpdateTask:
     @allure.story("Update")
     @allure.severity(allure.severity_level.CRITICAL)
+    @allure.description(
+        "Sending a PUT request with only a title field updates the title and leaves "
+        "all other fields (status, priority) unchanged. Confirms the endpoint supports "
+        "partial updates — only fields present in the body are modified."
+    )
     async def test_partial_update_only_changes_specified_fields(
         self, client: AsyncClient, auth_headers: dict
     ):
@@ -113,6 +144,11 @@ class TestUpdateTask:
 
     @allure.story("Update")
     @allure.severity(allure.severity_level.MINOR)
+    @allure.description(
+        "Updating a task with the same values it already has returns 200 with an "
+        "unchanged response. Verifies that the update operation is idempotent — "
+        "repeating it has no unintended side effects."
+    )
     async def test_update_task_with_same_values_is_idempotent(
         self, client: AsyncClient, auth_headers: dict
     ):
@@ -132,6 +168,11 @@ class TestUpdateTask:
 class TestDeleteTask:
     @allure.story("Delete")
     @allure.severity(allure.severity_level.CRITICAL)
+    @allure.description(
+        "Deleting an existing task returns 204 No Content, confirming the operation "
+        "succeeded. The API uses soft deletion — the row is marked is_deleted=True "
+        "rather than removed from the database."
+    )
     async def test_delete_task_returns_204(
         self, client: AsyncClient, auth_headers: dict
     ):
@@ -143,6 +184,11 @@ class TestDeleteTask:
 
     @allure.story("Delete")
     @allure.severity(allure.severity_level.CRITICAL)
+    @allure.description(
+        "Fetching a soft-deleted task by ID returns 404, not 500. Verifies that the "
+        "get_task_or_404 helper correctly filters out is_deleted=True rows and that "
+        "deleted data does not cause a server error."
+    )
     async def test_deleted_task_returns_404_not_500(
         self, client: AsyncClient, auth_headers: dict
     ):
@@ -155,6 +201,11 @@ class TestDeleteTask:
 
     @allure.story("Delete")
     @allure.severity(allure.severity_level.CRITICAL)
+    @allure.description(
+        "After a task is deleted, it no longer appears in the GET /tasks list response. "
+        "Confirms the list endpoint's is_deleted=False filter works correctly and that "
+        "soft-deleted tasks are fully hidden from the user."
+    )
     async def test_deleted_task_absent_from_list(
         self, client: AsyncClient, auth_headers: dict
     ):
@@ -171,6 +222,12 @@ class TestDeleteTask:
 class TestFullCrudChain:
     @allure.story("CRUD Chain")
     @allure.severity(allure.severity_level.CRITICAL)
+    @allure.description(
+        "End-to-end journey test: register a new user, log in to obtain a token, "
+        "create a task, update its status from 'todo' to 'done', delete it, then "
+        "confirm it is absent from the task list. Exercises the full authenticated "
+        "CRUD lifecycle in a single flow."
+    )
     async def test_register_login_create_update_delete(self, client: AsyncClient):
         email = unique_email()
         await register_user(client, email=email)
