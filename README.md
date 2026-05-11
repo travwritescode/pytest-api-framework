@@ -41,6 +41,29 @@ pip install -r ../flowstate-api/requirements.txt
 pytest
 ```
 
+## DB isolation
+
+Each test gets its own throwaway SQLite database. There is no shared state between tests and no cleanup scripts to maintain.
+
+| Decision | Reason |
+|---|---|
+| `sqlite:///:memory:` | Zero-cost, no disk I/O, automatically gone when the connection closes |
+| `StaticPool` | Forces SQLAlchemy to reuse one connection for the engine's lifetime — without this, the httpx ASGI transport and the test session can land on different connections, making the in-memory DB appear empty to one of them |
+| `PRAGMA foreign_keys=ON` | SQLite disables FK constraints by default; this makes FK violations visible during tests |
+| `Base.metadata.drop_all` on teardown | Wipes the schema after every test so no rows can bleed across |
+
+The full fixture dependency chain is:
+
+```
+db_session
+  └── client                   overrides get_db with the test session
+        ├── registered_user    POST /auth/register — unique email per test
+        │     └── auth_headers POST /auth/login — returns Bearer token
+        │           └── seeded_task  POST /tasks via factories.create_task
+        └── second_user        second isolated user for cross-user tests
+              └── other_auth_headers
+```
+
 ## Allure Report
 
 Each test is annotated with `@allure.feature`, `@allure.story`, `@allure.severity`, and `@allure.description`. Running the suite produces raw results in `allure-results/`.

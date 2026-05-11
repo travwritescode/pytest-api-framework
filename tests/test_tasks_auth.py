@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+import pytest
 
 import allure
 from httpx import AsyncClient
@@ -76,6 +77,7 @@ class TestCrossUserAccess:
         "'Access denied'. Verifies that task ownership is enforced on GET /tasks/{id} "
         "and that valid authentication alone is not sufficient to access another user's data."
     )
+    @pytest.mark.current_behavior
     async def test_get_another_users_task_returns_403(self, client: AsyncClient):
         email_a, email_b = unique_email(), unique_email()
         await register_user(client, email=email_a)
@@ -97,6 +99,7 @@ class TestCrossUserAccess:
         "Verifies that the ownership check applies to PUT /tasks/{id} and prevents "
         "cross-user data modification."
     )
+    @pytest.mark.current_behavior
     async def test_update_another_users_task_returns_403(self, client: AsyncClient):
         email_a, email_b = unique_email(), unique_email()
         await register_user(client, email=email_a)
@@ -119,6 +122,7 @@ class TestCrossUserAccess:
         "Verifies that the ownership check applies to DELETE /tasks/{id} and prevents "
         "cross-user data destruction."
     )
+    @pytest.mark.current_behavior
     async def test_delete_another_users_task_returns_403(self, client: AsyncClient):
         email_a, email_b = unique_email(), unique_email()
         await register_user(client, email=email_a)

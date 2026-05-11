@@ -1,5 +1,5 @@
 import allure
-import pytest
+import uuid
 from httpx import AsyncClient
 
 from helpers.factories import auth_headers, create_task, login, register_user, unique_email
@@ -107,7 +107,7 @@ class TestGetTask:
     async def test_get_nonexistent_task_returns_404(
         self, client: AsyncClient, auth_headers: dict
     ):
-        resp = await client.get("/tasks/99999", headers=auth_headers)
+        resp = await client.get(f"/tasks/{uuid.uuid4()}", headers=auth_headers)
 
         assert resp.status_code == 404
 

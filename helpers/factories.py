@@ -1,7 +1,7 @@
 """
 Thin async helpers that wrap the flowstate-api endpoints.
 
-Each function makes exactly one HTTP call and returns the parsed JSON body.
+Each function makes exactly one HTTP call and returns the raw Response.
 They exist solely to keep test bodies readable — setup noise stays here,
 assertions stay in the tests.
 """
